@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QC V2 — Form Input</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EAE6DA;
+    --panel: #FDFCF9;
+    --ink: #1E2A22;
+    --ink-soft: #5B6259;
+    --line: #CFC8B4;
+    --amber: #C7860B;
+    --amber-deep: #96620A;
+    --rust: #8A3E2E;
+    --rust-soft: #E7D3C9;
+    --green: #3E6B4A;
+    --green-soft: #D9E5D6;
+    --lcd-bg: #16211A;
+    --lcd-fg: #9CE6A8;
+    --radius: 3px;
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 3px);
+    color: var(--ink);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 18px 12px 60px;
+  }
+  .wrap{ max-width: 720px; margin: 0 auto; }
+
+  /* ---- Header: torn inspection tag ---- */
+  .tag{
+    position: relative;
+    background: var(--ink);
+    color: #F2EFE6;
+    padding: 22px 22px 26px;
+    border-radius: var(--radius);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+  }
+  .tag::before{
+    content: "";
+    position: absolute;
+    top: -9px; left: 50%;
+    width: 18px; height: 18px;
+    background: var(--bg);
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    transform: translateX(-50%);
+  }
+  .tag::after{
+    content:"";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 10px;
+    background:
+      linear-gradient(135deg, var(--bg) 50%, transparent 50%) 0 0,
+      linear-gradient(-135deg, var(--bg) 50%, transparent 50%) 0 0;
+    background-size: 14px 14px;
+    background-repeat: repeat-x;
+  }
+  .tag-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+  .tag h1{
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 34px;
+    line-height: 1.05;
+    margin: 4px 0 2px;
+    letter-spacing: 0.01em;
+  }
+  .tag p{
+    margin: 0;
+    font-size: 12.5px;
+    color: #C9C4B5;
+    max-width: 46ch;
+  }
+  .gear-btn{
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.08);
+    color: #F2EFE6;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .settings-panel{
+    background: var(--panel);
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .settings-panel[hidden]{ display: none; }
+  #settings-status{ margin-top: 10px; }
+  #settings-status.ok{ color: var(--green); }
+  #settings-status.err{ color: var(--rust); }
+
+  /* ---- Tabs ---- */
+  .tabs{
+    display: flex;
+    gap: 8px;
+    margin: 22px 0 16px;
+  }
+  .tab-btn{
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 12px 10px 10px;
+    border: 2px solid var(--ink);
+    background: var(--panel);
+    color: var(--ink-soft);
+    border-radius: var(--radius) var(--radius) 0 0;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+  }
+  .tab-btn.active{ top: 0; color: var(--panel); }
+  .tab-btn.active[data-tab="temuan"]{ background: var(--rust); border-color: var(--rust); }
+  .tab-btn.active[data-tab="spec"]{ background: var(--green); border-color: var(--green); }
+
+  /* ---- Panel / card ---- */
+  .panel{
+    background: var(--panel);
+    border: 2px solid var(--ink);
+    border-radius: 0 var(--radius) var(--radius) var(--radius);
+    padding: 20px;
+  }
+  .panel[hidden]{ display:none; }
+
+  .section-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 6px;
+    margin: 18px 0 12px;
+  }
+  .section-label:first-child{ margin-top: 0; }
+
+  .grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 12px;
+  }
+  .field{ display:flex; flex-direction: column; gap: 5px; }
+  .field.full{ grid-column: 1 / -1; }
+  label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+  select, input[type=text], input[type=date], input[type=number]{
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    padding: 9px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--ink);
+  }
+  select:disabled, input:disabled{ background: #F0EEE7; color: #9B968A; }
+  select:focus, input:focus{ outline: 2px solid var(--amber); outline-offset: 1px; }
+
+  /* numeric fields styled like a digital caliper readout */
+  .lcd input{
+    font-family: var(--font-mono);
+    background: var(--lcd-bg);
+    color: var(--lcd-fg);
+    border: 1.5px solid #0B120D;
+    font-size: 15px;
+  }
+  .lcd input::placeholder{ color: #4E7A57; }
+  .lcd input:focus{ outline: 2px solid var(--amber); }
+
+  .readonly-chip{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 9px 10px;
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    color: var(--ink-soft);
+    background: #F3F1E9;
+  }
+
+  .btn-row{ display:flex; gap: 10px; margin-top: 18px; }
+  button.submit{
+    font-family: var(--font-display);
+    font-size: 17px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 11px 18px;
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    cursor: pointer;
+    flex: 1;
+  }
+  #form-temuan .submit{ background: var(--rust); }
+  #form-spec .submit{ background: var(--green); }
+  button.submit:active{ transform: translateY(1px); }
+
+  .hint{ font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ---- Manifest / log ---- */
+  .manifest{ margin-top: 26px; }
+  .manifest-head{
+    display:flex; align-items:baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .manifest-head h2{
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  .count-chip{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--amber);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .copy-all{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: #F2EFE6;
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .copy-all:disabled{ background: #B9B4A5; cursor: not-allowed; }
+
+  .entry{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  #log-temuan .entry{ border-left-color: var(--rust); }
+  #log-spec .entry{ border-left-color: var(--green); }
+  .entry-body{ line-height: 1.5; }
+  .entry-body b{ color: var(--ink); }
+  .entry-body span{ color: var(--ink-soft); }
+  .entry-actions{ display:flex; flex-direction: column; gap: 6px; }
+  .entry-actions button{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 4px 7px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .empty-note{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    padding: 10px 2px;
+  }
+
+  .stamp{
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) scale(0.8) rotate(-8deg);
+    background: var(--amber-deep);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    border: 2px solid #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.25s ease;
+    z-index: 50;
+  }
+  .stamp.show{
+    opacity: 1;
+    transform: translateX(-50%) scale(1) rotate(-3deg);
+  }
+
+  footer{
+    max-width: 720px;
+    margin: 22px auto 0;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  @media (max-width: 480px){
+    .grid{ grid-template-columns: 1fr; }
+    .tag h1{ font-size: 27px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stamp" id="stamp">Tersimpan</div>
+
+<div class="wrap">
+  <div class="tag">
+    <div class="tag-eyebrow">QC V2 · Form Input Lapangan</div>
+    <h1>Input Temuan &amp; Data Spec</h1>
+    <p>Diisi langsung dari mesin/lini produksi. Data terkirim otomatis ke Google Sheets lewat Apps Script.</p>
+    <button type="button" class="gear-btn" id="open-settings">⚙ Pengaturan koneksi</button>
+  </div>
+
+  <div class="settings-panel" id="settings-panel" hidden>
+    <div class="section-label">Koneksi ke Google Sheets</div>
+    <div class="field full">
+      <label for="script-url">Web App URL (Apps Script)</label>
+      <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="btn-row">
+      <button type="button" class="submit" id="save-url" style="background:var(--ink)">Simpan URL</button>
+      <button type="button" class="submit" id="test-url" style="background:var(--amber-deep)">Tes koneksi</button>
+    </div>
+    <div class="hint" id="settings-status">Belum ada URL tersimpan — entri akan disimpan lokal dulu untuk disalin manual.</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="temuan">Temuan</button>
+    <button class="tab-btn" data-tab="spec">Data Spec</button>
+  </div>
+
+  <!-- ===================== FORM TEMUAN ===================== -->
+  <div class="panel" id="panel-temuan">
+    <form id="form-temuan">
+      <div class="section-label">Waktu &amp; Lini <span style="opacity:.6">(otomatis, GMT+7)</span></div>
+      <div class="grid">
+        <div class="field">
+          <label>Tanggal</label>
+          <div class="readonly-chip" id="t-tanggal-display">—</div>
+        </div>
+        <div class="field">
+          <label>Shift</label>
+          <div class="readonly-chip" id="t-shift-display">—</div>
+        </div>
+        <div class="field full">
+          <label>Timestamp</label>
+          <div class="readonly-chip" id="t-timestamp-display">—</div>
+        </div>
+      </div>
+
+      <div class="section-label">Mesin &amp; Produk</div>
+      <div class="grid">
+        <div class="field">
+          <label for="t-divisi">Divisi</label>
+          <select id="t-divisi" required>
+            <option value="">Pilih divisi</option>
+            <option value="LOKAL">LOKAL</option>
+            <option value="EXPORT">EXPORT</option>
+            <option value="PRINTING">PRINTING</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="t-mesin">Mesin</label>
+          <select id="t-mesin" required disabled>
+            <option value="">Pilih divisi dulu</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="t-produk">Produk</label>
+          <select id="t-produk" required disabled>
+            <option value="">Pilih mesin dulu</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Detail Temuan</div>
+      <div class="grid">
+        <div class="field">
+          <label for="t-temuan">Temuan</label>
+          <select id="t-temuan" required disabled>
+            <option value="">Pilih mesin dulu</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="t-tipe">Tipe</label>
+          <select id="t-tipe" required disabled>
+            <option value="">Pilih temuan dulu</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="t-keterangan">Keterangan tambahan</label>
+          <input type="text" id="t-keterangan" placeholder="mis. gambar belang di sisi kiri">
+        </div>
+        <div class="field full">
+          <label for="t-solusi">Solusi</label>
+          <input type="text" id="t-solusi" placeholder="tindakan yang dilakukan">
+        </div>
+        <div class="field">
+          <label for="t-operator">Operator Mesin</label>
+          <input type="text" id="t-operator" required placeholder="nama operator">
+        </div>
+        <div class="field">
+          <label for="t-ttd">TTD QC</label>
+          <input type="text" id="t-ttd" required placeholder="nama QC">
+        </div>
+      </div>
+
+      <div class="hint">Tanggal, shift, dan timestamp mengikuti jam saat ini (GMT+7) dan diambil otomatis saat form disimpan.</div>
+      <div class="btn-row">
+        <button type="submit" class="submit">Simpan Temuan</button>
+      </div>
+    </form>
+
+    <div class="manifest">
+      <div class="manifest-head">
+        <h2>Antrean belum disalin <span class="count-chip" id="count-temuan">0</span></h2>
+        <button class="copy-all" id="copy-temuan" disabled>Salin semua (TSV)</button>
+      </div>
+      <div id="log-temuan"></div>
+    </div>
+  </div>
+
+  <!-- ===================== FORM DATA SPEC ===================== -->
+  <div class="panel" id="panel-spec" hidden>
+    <form id="form-spec">
+      <div class="section-label">Item &amp; Waktu</div>
+      <div class="grid">
+        <div class="field full">
+          <label for="s-item">Item</label>
+          <select id="s-item" required>
+            <option value="">Pilih item</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tanggal <span style="opacity:.6">(otomatis)</span></label>
+          <div class="readonly-chip" id="s-tanggal-display">—</div>
+        </div>
+        <div class="field">
+          <label>Shift <span style="opacity:.6">(otomatis)</span></label>
+          <div class="readonly-chip" id="s-shift-display">—</div>
+        </div>
+        <div class="field full">
+          <label for="s-mesin">Mesin</label>
+          <select id="s-mesin" required>
+            <option value="">Pilih mesin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Hasil Ukur (STD terisi otomatis dari master berat)</div>
+      <div class="grid">
+        <div class="field lcd">
+          <label for="s-standart">Standart (gr)</label>
+          <input type="text" id="s-standart" placeholder="—" readonly>
+        </div>
+        <div class="field lcd">
+          <label for="s-berat">Berat (gr)</label>
+          <input type="number" step="0.01" id="s-berat" required placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-diabibir">Dia Bibir (mm)</label>
+          <input type="number" step="0.01" id="s-diabibir" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-dianeck">Dia Neck (mm)</label>
+          <input type="number" step="0.01" id="s-dianeck" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-tebalbody">Tebal Body (mm)</label>
+          <input type="number" step="0.01" id="s-tebalbody" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-tebalbawah">Tebal Bawah (mm)</label>
+          <input type="number" step="0.01" id="s-tebalbawah" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-tinggicup">Tinggi Cup (mm)</label>
+          <input type="number" step="0.01" id="s-tinggicup" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-tinggiperslop">Tinggi Perslop (mm)</label>
+          <input type="number" step="0.01" id="s-tinggiperslop" placeholder="0.0">
+        </div>
+        <div class="field lcd full">
+          <label for="s-volume">Volume</label>
+          <input type="number" step="0.01" id="s-volume" placeholder="0.0">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="submit">Simpan Data Spec</button>
+      </div>
+    </form>
+
+    <div class="manifest">
+      <div class="manifest-head">
+        <h2>Antrean belum disalin <span class="count-chip" id="count-spec">0</span></h2>
+        <button class="copy-all" id="copy-spec" disabled>Salin semua (TSV)</button>
+      </div>
+      <div id="log-spec"></div>
+    </div>
+  </div>
+</div>
+
+<footer>Jika Script URL sudah dipasang, entri langsung tersimpan ke Google Sheets. Kalau belum/koneksi gagal, entri masuk ke antrean lokal untuk disalin manual (TSV) ke sheet.</footer>
+
+<script>
+// ---------------- master data (dari sheet DATA PRODUK / DATA TROUBLE / STANDARD BERAT) ----------------
+const divisiMesin = {
+  LOKAL: ['TF04','TF06','TF07','TF08','EXTR4P','EXTR5P'],
+  EXPORT: ['TF11P','TF11L'],
+  PRINTING: ['P1','P2','P3','P4']
+};
+
+const mesinProduk = {
+  TF04: ['8oz','10oz','12oz','14oz'],
+  TF06: ['120ml','180ml','220ml','150ps','200ps'],
+  TF07: ['8oz','10oz','12oz','14oz'],
+  TF08: ['14oz','16hallo','16slim','18hallo slim','18slim','22hallo slim','22slim'],
+  EXTR4P: ['SheetPS','SheetNatural'],
+  EXTR5P: ['SheetNatural'],
+  TF11P: ['AAL','UAL','6oz','8oz','10oz','12oz','14oz'],
+  TF11L: ['120ml','220ml','200ps'],
+  P1: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE'],
+  P2: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE'],
+  P3: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS'],
+  P4: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS']
+};
+
+function mesinCategory(mesin){
+  if(mesin.startsWith('TF')) return 'THERMO';
+  if(mesin.startsWith('EXTR')) return 'EXTR';
+  return 'PRINTING';
+}
+
+const troubleData = {
+  THERMO: {
+    'Collapse': ['Cup kolab bawah bibir..'],
+    'Unmoulded': ['Cup kolab bottom (unmoulded)..','Cup kolab body (unmoulded)..','Body bundar tidak siku sesuai mould','Cup bottom pendek..'],
+    'Button Gembos': ['Cup bottom gembos..'],
+    'Scratch': ['Cup scratch (bergaris) body..','Cup scratch (V) body..'],
+    'Appereance': ['Cup body merintis..','Cup body buram..','Cup overheat..'],
+    'Under gramasi': ['Cup under gramasi..'],
+    'Over gramasi': ['Cup over gramasi..'],
+    'Material Cup': ['Material mould','Material stretch','Bibir cup gelombang'],
+    'Cup kotor': ['Noda oli'],
+    'Black spot': ['Black spot'],
+    'White spot': ['White spot'],
+    'Serabut': ['Serabut panjang'],
+    'Quantity tidak sesuai': ['Cup perslop tidak sesuai','Slop perbox tidak sesuai']
+  },
+  EXTR: {
+    'Kondisi Sheet': ['Visual not OK','Tebal sheet tidak sesuai']
+  },
+  PRINTING: {
+    'Visual': ['Smear print','Overlap','Discolour','Uncompleted','Ink stain'],
+    'Cup': ['Blackspot','Cup rapet','Body melipat','Statik'],
+    'Packing': ['Jumlah cup perslop','Jumlah slop perbox','Penulisan kode box']
+  }
+};
+
+const standartBerat = {
+  '6NATURAL':3,'8NATURAL':3.4,'10NATURAL':3.6,'12NATURAL':3.8,'14NATURAL':4,'16NATURAL':4.7,'16NATURAL(PRINT)':5.5,
+  '12OVAL':5.5,'14OVAL':6,'16OVAL':6.5,'18OVAL':7,'22OVAL':8,'22OVAL(7GR)':7,
+  '8SQUARE':5,'12SQUARE':6,'16SQUARE':8.5,'22SQUARE':11.5,'UD SQUARE(TUTUP)':3.5,
+  '12SLIM':3.8,'14SLIM':4,'16SLIM':4.7,'18SLIM':7,'22SLIM':8,'22SLIM(9GR)':9,
+  '18BIG':7,'22BIG':8,'22BIG(7GR-STMP)':7,'26BIG':8,
+  '10HALLO CUP':3.2,'12HALLO CUP':3.3,'14HALLO CUP':3.7,'16HALLO CUP':3.8,'18HALLO CUP':3.8,
+  '18SLIM HALLO CUP':6.7,'18BIG HALLO CUP':6.7,'22SLIM HALLO CUP':6.7,'22BIG HALLO CUP':6.7,
+  'JELLY 60ML':1.3,'JELLY 90ML':1.5,
+  'RETAIL 120':2.1,'RETAIL 180':2.3,'RETAIL 220':2.44,
+  '200ML PUTIH SUSU':2.6,'150ML PUTIH SUSU':2.6,
+  'AAL':6.45
+};
+
+const allMesin = Object.values(divisiMesin).flat();
+
+// ---------------- helpers ----------------
+function fillSelect(sel, items, placeholder){
+  sel.innerHTML = '<option value="">'+placeholder+'</option>' + items.map(i => `<option value="${i}">${i}</option>`).join('');
+}
+// Semua waktu dihitung terhadap GMT+7 (Asia/Jakarta), berapa pun zona waktu perangkat/browser.
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function nowJakarta(){
+  // Date.now() = epoch ms absolut (UTC). Tambahkan offset 7 jam lalu baca lewat metode getUTC*
+  // supaya hasilnya adalah "jam dinding" Jakarta, tidak terpengaruh timezone lokal perangkat.
+  const jakartaEpoch = Date.now() + 7 * 60 * 60 * 1000;
+  return new Date(jakartaEpoch);
+}
+
+function currentDateDMY(){
+  const d = nowJakarta();
+  return `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth()+1)}-${d.getUTCFullYear()}`;
+}
+
+function currentTimestampHMS(){
+  const d = nowJakarta();
+  return `${pad2(d.getUTCHours())}-${pad2(d.getUTCMinutes())}-${pad2(d.getUTCSeconds())}`;
+}
+
+function currentShift(){
+  const hour = nowJakarta().getUTCHours();
+  if(hour >= 6 && hour < 14) return '1';
+  if(hour >= 14 && hour < 22) return '2';
+  return '3'; // 22:00 - 06:00 (lintas tengah malam)
+}
+function showStamp(text){
+  const el = document.getElementById('stamp');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(showStamp._t);
+  showStamp._t = setTimeout(()=> el.classList.remove('show'), 1100);
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// ---------------- pengaturan koneksi (Apps Script Web App URL) ----------------
+const SCRIPT_URL_KEY = 'qcv2-script-url';
+let scriptUrl = 'https://script.google.com/macros/s/AKfycbwfOB7w1bUw_CSt0L6FfNt1fg93L2hloWqB1KLfmUo_QC6Yj8Aegu7iKtM9GG7_RtOa/exec';
+
+const settingsPanel = document.getElementById('settings-panel');
+const openSettingsBtn = document.getElementById('open-settings');
+const scriptUrlInput = document.getElementById('script-url');
+const settingsStatus = document.getElementById('settings-status');
+
+openSettingsBtn.addEventListener('click', ()=>{
+  settingsPanel.hidden = !settingsPanel.hidden;
+});
+
+function setSettingsStatus(text, kind){
+  settingsStatus.textContent = text;
+  settingsStatus.className = kind ? kind : '';
+}
+
+async function loadScriptUrl(){
+  try{
+    const r = await window.storage.get(SCRIPT_URL_KEY, true);
+    scriptUrl = r ? r.value : '';
+  }catch(e){ scriptUrl = ''; }
+  scriptUrlInput.value = scriptUrl;
+  setSettingsStatus(
+    scriptUrl
+      ? 'Terhubung ke: ' + scriptUrl
+      : 'Belum ada URL tersimpan — entri akan disimpan lokal dulu untuk disalin manual.',
+    scriptUrl ? 'ok' : ''
+  );
+}
+
+document.getElementById('save-url').addEventListener('click', async ()=>{
+  scriptUrl = scriptUrlInput.value.trim();
+  try{
+    await window.storage.set(SCRIPT_URL_KEY, scriptUrl, true);
+    setSettingsStatus(scriptUrl ? 'URL disimpan: ' + scriptUrl : 'URL dikosongkan.', scriptUrl ? 'ok' : '');
+    showStamp('URL tersimpan');
+  }catch(e){
+    setSettingsStatus('Gagal menyimpan URL.', 'err');
+  }
+});
+
+document.getElementById('test-url').addEventListener('click', async ()=>{
+  const url = scriptUrlInput.value.trim();
+  if(!url){ setSettingsStatus('Isi URL dulu sebelum tes.', 'err'); return; }
+  setSettingsStatus('Mengirim permintaan tes...', '');
+  try{
+    // Apps Script Web App tidak selalu mengirim header CORS untuk dibaca browser,
+    // jadi mode 'no-cors' dipakai agar request tetap terkirim tanpa dianggap error.
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    setSettingsStatus('Permintaan terkirim. Cek di Apps Script > Executions untuk memastikan berhasil.', 'ok');
+  }catch(e){
+    setSettingsStatus('Gagal menjangkau URL: ' + e.message, 'err');
+  }
+});
+
+// Kirim satu baris ke Google Sheets lewat Apps Script Web App.
+// Karena respons Apps Script tidak selalu bisa dibaca browser (CORS),
+// keberhasilan hanya berarti "request berhasil dikirim", bukan konfirmasi tertulis.
+async function pushRowToSheet(sheetName, rowArray){
+  if(!scriptUrl) return { ok: false, reason: 'no-url' };
+  try{
+    await fetch(scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ sheet: sheetName, row: rowArray })
+    });
+    return { ok: true };
+  }catch(err){
+    return { ok: false, reason: err.message };
+  }
+}
+
+function toRowArray(entry, cols){
+  return cols.map(c => (entry[c] !== undefined && entry[c] !== null) ? entry[c] : '');
+}
+
+// ---------------- tabs ----------------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('panel-temuan').hidden = tab !== 'temuan';
+    document.getElementById('panel-spec').hidden = tab !== 'spec';
+  });
+});
+
+// ---------------- FORM TEMUAN ----------------
+const tDivisi = document.getElementById('t-divisi');
+const tMesin = document.getElementById('t-mesin');
+const tProduk = document.getElementById('t-produk');
+const tTemuan = document.getElementById('t-temuan');
+const tTipe = document.getElementById('t-tipe');
+const tTanggalDisplay = document.getElementById('t-tanggal-display');
+const tShiftDisplay = document.getElementById('t-shift-display');
+const tTimestampDisplay = document.getElementById('t-timestamp-display');
+const sTanggalDisplay = document.getElementById('s-tanggal-display');
+const sShiftDisplay = document.getElementById('s-shift-display');
+
+const SHIFT_RANGE = { '1': '06:00–14:00', '2': '14:00–22:00', '3': '22:00–06:00' };
+
+function refreshClocks(){
+  const tgl = currentDateDMY();
+  const shift = currentShift();
+  const ts = currentTimestampHMS();
+  tTanggalDisplay.textContent = tgl;
+  tShiftDisplay.textContent = `Shift ${shift} (${SHIFT_RANGE[shift]})`;
+  tTimestampDisplay.textContent = ts;
+  sTanggalDisplay.textContent = tgl;
+  sShiftDisplay.textContent = `Shift ${shift} (${SHIFT_RANGE[shift]})`;
+}
+refreshClocks();
+setInterval(refreshClocks, 1000);
+
+tDivisi.addEventListener('change', ()=>{
+  const list = divisiMesin[tDivisi.value] || [];
+  if(list.length){
+    fillSelect(tMesin, list, 'Pilih mesin');
+    tMesin.disabled = false;
+  } else {
+    tMesin.innerHTML = '<option value="">Pilih divisi dulu</option>';
+    tMesin.disabled = true;
+  }
+  tProduk.innerHTML = '<option value="">Pilih mesin dulu</option>'; tProduk.disabled = true;
+  tTemuan.innerHTML = '<option value="">Pilih mesin dulu</option>'; tTemuan.disabled = true;
+  tTipe.innerHTML = '<option value="">Pilih temuan dulu</option>'; tTipe.disabled = true;
+});
+
+tMesin.addEventListener('change', ()=>{
+  const produkList = mesinProduk[tMesin.value] || [];
+  fillSelect(tProduk, produkList, 'Pilih produk');
+  tProduk.disabled = produkList.length === 0;
+
+  const cat = troubleData[mesinCategory(tMesin.value)] || {};
+  const temuanList = Object.keys(cat);
+  fillSelect(tTemuan, temuanList, 'Pilih temuan');
+  tTemuan.disabled = temuanList.length === 0;
+
+  tTipe.innerHTML = '<option value="">Pilih temuan dulu</option>'; tTipe.disabled = true;
+});
+
+tTemuan.addEventListener('change', ()=>{
+  const cat = troubleData[mesinCategory(tMesin.value)] || {};
+  const tipeList = cat[tTemuan.value] || [];
+  fillSelect(tTipe, tipeList, 'Pilih tipe');
+  tTipe.disabled = tipeList.length === 0;
+});
+
+// ---------------- FORM SPEC ----------------
+const sItem = document.getElementById('s-item');
+const sStandart = document.getElementById('s-standart');
+const sMesin = document.getElementById('s-mesin');
+fillSelect(sItem, Object.keys(standartBerat), 'Pilih item');
+fillSelect(sMesin, allMesin, 'Pilih mesin');
+
+sItem.addEventListener('change', ()=>{
+  const std = standartBerat[sItem.value];
+  sStandart.value = std !== undefined ? String(std).replace('.', ',') : '';
+});
+
+// ---------------- storage / log ----------------
+const TEMUAN_KEY = 'qcv2-queue-temuan';
+const SPEC_KEY = 'qcv2-queue-spec';
+let queueTemuan = [];
+let queueSpec = [];
+
+async function loadQueues(){
+  try{
+    const r = await window.storage.get(TEMUAN_KEY, true);
+    queueTemuan = r ? JSON.parse(r.value) : [];
+  }catch(e){ queueTemuan = []; }
+  try{
+    const r = await window.storage.get(SPEC_KEY, true);
+    queueSpec = r ? JSON.parse(r.value) : [];
+  }catch(e){ queueSpec = []; }
+  renderLog('temuan');
+  renderLog('spec');
+}
+
+async function saveQueue(kind){
+  const key = kind === 'temuan' ? TEMUAN_KEY : SPEC_KEY;
+  const data = kind === 'temuan' ? queueTemuan : queueSpec;
+  try{
+    await window.storage.set(key, JSON.stringify(data), true);
+  }catch(e){ console.error('gagal menyimpan', e); }
+}
+
+const TEMUAN_COLS = ['tanggal','shift','timestamp','divisi','mesin','produk','temuan','tipe','keterangan','solusi','operator','ttd'];
+const TEMUAN_LABELS = ['Tanggal','Shift','Timestamp','Divisi','Mesin','Produk','Temuan','Tipe','Keterangan','Solusi','Operator Mesin','TTD QC'];
+const SPEC_COLS = ['item','tanggal','shift','mesin','standart','berat','diabibir','dianeck','tebalbody','tebalbawah','tinggicup','tinggiperslop','volume'];
+const SPEC_LABELS = ['Item','Tanggal','Shift','Mesin','Standart(gr)','Berat(gr)','Dia Bibir(mm)','Dia Neck(mm)','Tebal Body(mm)','Tebal Bawah(mm)','Tinggi Cup(mm)','Tinggi Perslop(mm)','Volume'];
+// Nama tab harus sama persis dengan nama sheet di Google Sheets (dipakai oleh Apps Script).
+const SHEET_NAME_TEMUAN = 'INPUT TEMUAN';
+const SHEET_NAME_SPEC = 'INPUT DATA SPEC';
+
+function toTsvRow(entry, cols){
+  return cols.map(c => entry[c] !== undefined && entry[c] !== null ? entry[c] : '').join('\t');
+}
+
+function renderLog(kind){
+  const queue = kind === 'temuan' ? queueTemuan : queueSpec;
+  const cols = kind === 'temuan' ? TEMUAN_COLS : SPEC_COLS;
+  const labels = kind === 'temuan' ? TEMUAN_LABELS : SPEC_LABELS;
+  const container = document.getElementById('log-' + kind);
+  const count = document.getElementById('count-' + kind);
+  const copyBtn = document.getElementById('copy-' + kind);
+
+  count.textContent = queue.length;
+  copyBtn.disabled = queue.length === 0;
+
+  if(queue.length === 0){
+    container.innerHTML = '<div class="empty-note">Belum ada entri baru di antrean.</div>';
+    return;
+  }
+
+  container.innerHTML = queue.slice().reverse().map((entry, revIdx)=>{
+    const idx = queue.length - 1 - revIdx;
+    const summary = kind === 'temuan'
+      ? `<b>${escapeHtml(entry.mesin)}</b> · ${escapeHtml(entry.produk)} <span>— ${escapeHtml(entry.temuan)} / ${escapeHtml(entry.tipe)}</span><br><span>${escapeHtml(entry.tanggal)} · shift ${escapeHtml(entry.shift)} · ${escapeHtml(entry.timestamp)}</span>`
+      : `<b>${escapeHtml(entry.item)}</b> · ${escapeHtml(entry.mesin)} <span>— berat ${escapeHtml(entry.berat)}gr (std ${escapeHtml(entry.standart)})</span><br><span>${escapeHtml(entry.tanggal)} · shift ${escapeHtml(entry.shift)}</span>`;
+    return `<div class="entry">
+        <div class="entry-body">${summary}</div>
+        <div class="entry-actions">
+          <button data-kind="${kind}" data-idx="${idx}" class="row-copy">Salin</button>
+          <button data-kind="${kind}" data-idx="${idx}" class="row-del">Hapus</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', async (e)=>{
+  if(e.target.classList.contains('row-copy')){
+    const kind = e.target.dataset.kind;
+    const idx = Number(e.target.dataset.idx);
+    const queue = kind === 'temuan' ? queueTemuan : queueSpec;
+    const cols = kind === 'temuan' ? TEMUAN_COLS : SPEC_COLS;
+    try{
+      await navigator.clipboard.writeText(toTsvRow(queue[idx], cols));
+      showStamp('Disalin');
+    }catch(err){ showStamp('Gagal salin'); }
+  }
+  if(e.target.classList.contains('row-del')){
+    const kind = e.target.dataset.kind;
+    const idx = Number(e.target.dataset.idx);
+    if(kind === 'temuan'){ queueTemuan.splice(idx,1); } else { queueSpec.splice(idx,1); }
+    await saveQueue(kind);
+    renderLog(kind);
+  }
+});
+
+document.getElementById('copy-temuan').addEventListener('click', async ()=>{
+  const text = queueTemuan.map(e => toTsvRow(e, TEMUAN_COLS)).join('\n');
+  try{ await navigator.clipboard.writeText(text); showStamp('Semua disalin'); }
+  catch(e){ showStamp('Gagal salin'); }
+});
+document.getElementById('copy-spec').addEventListener('click', async ()=>{
+  const text = queueSpec.map(e => toTsvRow(e, SPEC_COLS)).join('\n');
+  try{ await navigator.clipboard.writeText(text); showStamp('Semua disalin'); }
+  catch(e){ showStamp('Gagal salin'); }
+});
+
+// ---------------- submit handlers ----------------
+document.getElementById('form-temuan').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const entry = {
+    tanggal: currentDateDMY(),
+    shift: currentShift(),
+    timestamp: currentTimestampHMS(),
+    divisi: tDivisi.value,
+    mesin: tMesin.value,
+    produk: tProduk.value,
+    temuan: tTemuan.value,
+    tipe: tTipe.value,
+    keterangan: document.getElementById('t-keterangan').value,
+    solusi: document.getElementById('t-solusi').value,
+    operator: document.getElementById('t-operator').value,
+    ttd: document.getElementById('t-ttd').value
+  };
+  queueTemuan.push(entry);
+  await saveQueue('temuan');
+  renderLog('temuan');
+
+  const sent = await pushRowToSheet(SHEET_NAME_TEMUAN, toRowArray(entry, TEMUAN_COLS));
+  if(sent.ok){
+    // Berhasil terkirim: hapus dari antrean lokal (entri terakhir yang baru ditambahkan)
+    queueTemuan.pop();
+    await saveQueue('temuan');
+    renderLog('temuan');
+    showStamp('Terkirim ke Sheets');
+  } else {
+    showStamp('Disimpan lokal');
+  }
+
+  // reset detail fields, keep tanggal/shift for rapid re-entry
+  document.getElementById('t-keterangan').value = '';
+  document.getElementById('t-solusi').value = '';
+});
+
+document.getElementById('form-spec').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const entry = {
+    item: sItem.value,
+    tanggal: currentDateDMY(),
+    shift: currentShift(),
+    mesin: sMesin.value,
+    standart: sStandart.value,
+    berat: document.getElementById('s-berat').value,
+    diabibir: document.getElementById('s-diabibir').value,
+    dianeck: document.getElementById('s-dianeck').value,
+    tebalbody: document.getElementById('s-tebalbody').value,
+    tebalbawah: document.getElementById('s-tebalbawah').value,
+    tinggicup: document.getElementById('s-tinggicup').value,
+    tinggiperslop: document.getElementById('s-tinggiperslop').value,
+    volume: document.getElementById('s-volume').value
+  };
+  queueSpec.push(entry);
+  await saveQueue('spec');
+  renderLog('spec');
+
+  const sent = await pushRowToSheet(SHEET_NAME_SPEC, toRowArray(entry, SPEC_COLS));
+  if(sent.ok){
+    queueSpec.pop();
+    await saveQueue('spec');
+    renderLog('spec');
+    showStamp('Terkirim ke Sheets');
+  } else {
+    showStamp('Disimpan lokal');
+  }
+});
+
+loadQueues();
+loadScriptUrl();
+</script>
+</body>
+</html>
