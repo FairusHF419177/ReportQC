@@ -596,7 +596,7 @@ function currentDateDMY(){
 
 function currentTimestampHMS(){
   const d = nowJakarta();
-  return `${pad2(d.getUTCHours())}-${pad2(d.getUTCMinutes())}-${pad2(d.getUTCSeconds())}`;
+  return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`;
 }
 
 function currentShift(){
