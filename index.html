@@ -90,29 +90,6 @@
     color: #C9C4B5;
     max-width: 46ch;
   }
-  .gear-btn{
-    margin-top: 12px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    background: rgba(255,255,255,0.08);
-    color: #F2EFE6;
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: var(--radius);
-    padding: 6px 10px;
-    cursor: pointer;
-  }
-  .settings-panel{
-    background: var(--panel);
-    border: 2px dashed var(--line);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-top: 12px;
-  }
-  .settings-panel[hidden]{ display: none; }
-  #settings-status{ margin-top: 10px; }
-  #settings-status.ok{ color: var(--green); }
-  #settings-status.err{ color: var(--rust); }
 
   /* ---- Tabs ---- */
   .tabs{
@@ -344,21 +321,7 @@
   <div class="tag">
     <div class="tag-eyebrow">QC V2 · Form Input Lapangan</div>
     <h1>Input Temuan &amp; Data Spec</h1>
-    <p>Diisi langsung dari mesin/lini produksi. Data terkirim otomatis ke Google Sheets lewat Apps Script.</p>
-    <button type="button" class="gear-btn" id="open-settings">⚙ Pengaturan koneksi</button>
-  </div>
-
-  <div class="settings-panel" id="settings-panel" hidden>
-    <div class="section-label">Koneksi ke Google Sheets</div>
-    <div class="field full">
-      <label for="script-url">Web App URL (Apps Script)</label>
-      <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
-    </div>
-    <div class="btn-row">
-      <button type="button" class="submit" id="save-url" style="background:var(--ink)">Simpan URL</button>
-      <button type="button" class="submit" id="test-url" style="background:var(--amber-deep)">Tes koneksi</button>
-    </div>
-    <div class="hint" id="settings-status">Belum ada URL tersimpan — entri akan disimpan lokal dulu untuk disalin manual.</div>
+    <p>Diisi langsung dari mesin/lini produksi. Data terkirim otomatis ke Google Sheets.</p>
   </div>
 
   <div class="tabs">
@@ -539,7 +502,7 @@
   </div>
 </div>
 
-<footer>Jika Script URL sudah dipasang, entri langsung tersimpan ke Google Sheets. Kalau belum/koneksi gagal, entri masuk ke antrean lokal untuk disalin manual (TSV) ke sheet.</footer>
+<footer>Entri langsung tersimpan ke Google Sheets. Kalau koneksi gagal (mis. sedang offline), entri masuk ke antrean lokal untuk disalin manual (TSV) ke sheet.</footer>
 
 <script>
 // ---------------- master data (dari sheet DATA PRODUK / DATA TROUBLE / STANDARD BERAT) ----------------
@@ -653,70 +616,16 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
-// ---------------- pengaturan koneksi (Apps Script Web App URL) ----------------
-const SCRIPT_URL_KEY = 'qcv2-script-url';
-let scriptUrl = 'https://script.google.com/macros/s/AKfycbwfOB7w1bUw_CSt0L6FfNt1fg93L2hloWqB1KLfmUo_QC6Yj8Aegu7iKtM9GG7_RtOa/exec';
-
-const settingsPanel = document.getElementById('settings-panel');
-const openSettingsBtn = document.getElementById('open-settings');
-const scriptUrlInput = document.getElementById('script-url');
-const settingsStatus = document.getElementById('settings-status');
-
-openSettingsBtn.addEventListener('click', ()=>{
-  settingsPanel.hidden = !settingsPanel.hidden;
-});
-
-function setSettingsStatus(text, kind){
-  settingsStatus.textContent = text;
-  settingsStatus.className = kind ? kind : '';
-}
-
-async function loadScriptUrl(){
-  try{
-    const r = await window.storage.get(SCRIPT_URL_KEY, true);
-    scriptUrl = r ? r.value : '';
-  }catch(e){ scriptUrl = ''; }
-  scriptUrlInput.value = scriptUrl;
-  setSettingsStatus(
-    scriptUrl
-      ? 'Terhubung ke: ' + scriptUrl
-      : 'Belum ada URL tersimpan — entri akan disimpan lokal dulu untuk disalin manual.',
-    scriptUrl ? 'ok' : ''
-  );
-}
-
-document.getElementById('save-url').addEventListener('click', async ()=>{
-  scriptUrl = scriptUrlInput.value.trim();
-  try{
-    await window.storage.set(SCRIPT_URL_KEY, scriptUrl, true);
-    setSettingsStatus(scriptUrl ? 'URL disimpan: ' + scriptUrl : 'URL dikosongkan.', scriptUrl ? 'ok' : '');
-    showStamp('URL tersimpan');
-  }catch(e){
-    setSettingsStatus('Gagal menyimpan URL.', 'err');
-  }
-});
-
-document.getElementById('test-url').addEventListener('click', async ()=>{
-  const url = scriptUrlInput.value.trim();
-  if(!url){ setSettingsStatus('Isi URL dulu sebelum tes.', 'err'); return; }
-  setSettingsStatus('Mengirim permintaan tes...', '');
-  try{
-    // Apps Script Web App tidak selalu mengirim header CORS untuk dibaca browser,
-    // jadi mode 'no-cors' dipakai agar request tetap terkirim tanpa dianggap error.
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
-    setSettingsStatus('Permintaan terkirim. Cek di Apps Script > Executions untuk memastikan berhasil.', 'ok');
-  }catch(e){
-    setSettingsStatus('Gagal menjangkau URL: ' + e.message, 'err');
-  }
-});
+// ---------------- koneksi ke Google Sheets (Apps Script Web App) ----------------
+// URL ini sudah tertanam permanen di form — QC tidak perlu mengisi apa pun.
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfOB7w1bUw_CSt0L6FfNt1fg93L2hloWqB1KLfmUo_QC6Yj8Aegu7iKtM9GG7_RtOa/exec';
 
 // Kirim satu baris ke Google Sheets lewat Apps Script Web App.
 // Karena respons Apps Script tidak selalu bisa dibaca browser (CORS),
 // keberhasilan hanya berarti "request berhasil dikirim", bukan konfirmasi tertulis.
 async function pushRowToSheet(sheetName, rowArray){
-  if(!scriptUrl) return { ok: false, reason: 'no-url' };
   try{
-    await fetch(scriptUrl, {
+    await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ sheet: sheetName, row: rowArray })
@@ -986,7 +895,6 @@ document.getElementById('form-spec').addEventListener('submit', async (e)=>{
 });
 
 loadQueues();
-loadScriptUrl();
 </script>
 </body>
 </html>
