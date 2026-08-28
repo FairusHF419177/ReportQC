@@ -26,7 +26,8 @@
     --font-mono: 'IBM Plex Mono', monospace;
     --font-body: 'Inter', sans-serif;
   }
-  *{ box-sizing: border-box; }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html{ overflow-x: hidden; }
   body{
     margin:0;
     background: var(--bg);
@@ -35,7 +36,10 @@
     color: var(--ink);
     font-family: var(--font-body);
     min-height: 100vh;
-    padding: 18px 12px 60px;
+    overflow-x: hidden;
+    padding: 18px 12px calc(60px + env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
   }
   .wrap{ max-width: 720px; margin: 0 auto; }
 
@@ -142,7 +146,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px 12px;
   }
-  .field{ display:flex; flex-direction: column; gap: 5px; }
+  .field{ display:flex; flex-direction: column; gap: 5px; min-width: 0; }
   .field.full{ grid-column: 1 / -1; }
   label{
     font-family: var(--font-mono);
@@ -153,12 +157,22 @@
   }
   select, input[type=text], input[type=date], input[type=number]{
     font-family: var(--font-body);
-    font-size: 14.5px;
-    padding: 9px 10px;
+    font-size: 16px;
+    padding: 11px 10px;
+    min-height: 44px;
     border: 1.5px solid var(--line);
     border-radius: var(--radius);
     background: #fff;
     color: var(--ink);
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select{
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%235B6259' d='M6 8 0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 30px;
   }
   select:disabled, input:disabled{ background: #F0EEE7; color: #9B968A; }
   select:focus, input:focus{ outline: 2px solid var(--amber); outline-offset: 1px; }
@@ -190,7 +204,8 @@
     font-size: 17px;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    padding: 11px 18px;
+    padding: 13px 18px;
+    min-height: 48px;
     border: none;
     border-radius: var(--radius);
     color: #fff;
@@ -307,15 +322,147 @@
     text-align: center;
   }
 
-  @media (max-width: 480px){
+  /* ---- Modal konfirmasi kirim ---- */
+  .modal-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(14,18,15,0.55);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+    padding: 0;
+  }
+  .modal-overlay[hidden]{ display: none; }
+  .modal-card{
+    background: var(--panel);
+    width: 100%;
+    max-width: 480px;
+    border-radius: 14px 14px 0 0;
+    border: 2px solid var(--ink);
+    border-bottom: none;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    max-height: 82vh;
+    overflow-y: auto;
+    animation: sheet-up 0.18s ease-out;
+  }
+  @keyframes sheet-up{
+    from{ transform: translateY(24px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
+  }
+  .modal-card::before{
+    content:"";
+    display:block;
+    width: 40px; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+  }
+  .modal-title{
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+  }
+  .modal-sub{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .confirm-row{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 13.5px;
+  }
+  .confirm-row:last-child{ border-bottom: none; }
+  .confirm-row span{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+  .confirm-row b{
+    text-align: right;
+    word-break: break-word;
+  }
+  .modal-btn-row{
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .modal-btn{
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 13px 14px;
+    min-height: 48px;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .modal-btn.cancel{
+    background: #fff;
+    border: 1.5px solid var(--line);
+    color: var(--ink-soft);
+  }
+  .modal-btn.confirm{
+    border: none;
+    color: #fff;
+  }
+
+  @media (min-width: 560px){
+    .modal-overlay{ align-items: center; }
+    .modal-card{ border-radius: var(--radius); border-bottom: 2px solid var(--ink); }
+    .modal-card::before{ display: none; }
+  }
+
+  @media (max-width: 600px){
     .grid{ grid-template-columns: 1fr; }
-    .tag h1{ font-size: 27px; }
+    .tag{ padding: 18px 16px 22px; }
+    .tag h1{ font-size: 26px; }
+    .tag p{ max-width: none; }
+    .tab-btn{ font-size: 16px; padding: 13px 6px 11px; min-height: 46px; }
+    .entry{ flex-direction: column; }
+    .entry-actions{ flex-direction: row; }
+    .entry-actions button{ flex: 1; padding: 8px 7px; min-height: 38px; }
+    .manifest-head h2{ font-size: 17px; }
   }
 </style>
 </head>
 <body>
 
 <div class="stamp" id="stamp">Tersimpan</div>
+
+<!-- Modal konfirmasi sebelum data dikirim -->
+<div class="modal-overlay" id="confirm-modal" hidden>
+  <div class="modal-card">
+    <div class="modal-title" id="confirm-title">Konfirmasi</div>
+    <div class="modal-sub" id="confirm-sub">Periksa data sebelum dikirim</div>
+    <div id="confirm-body"></div>
+    <div class="modal-btn-row">
+      <button type="button" class="modal-btn cancel" id="confirm-cancel">Batal</button>
+      <button type="button" class="modal-btn confirm" id="confirm-ok">Kirim</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Form tersembunyi: mengirim data ke Apps Script lewat submit form asli
+     (bukan fetch) supaya tidak kena masalah CORS/redirect yang menghilangkan
+     data POST. Hasil kiriman ditampung di iframe tersembunyi. -->
+<iframe name="gsheet-target" id="gsheet-target" style="display:none" title="kirim ke sheet"></iframe>
+<form id="gsheet-form" method="POST" target="gsheet-target" style="display:none">
+  <input type="hidden" name="payload" id="gsheet-payload">
+</form>
 
 <div class="wrap">
   <div class="tag">
@@ -616,20 +763,61 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
+// ---------------- modal konfirmasi kirim ----------------
+const confirmModal = document.getElementById('confirm-modal');
+const confirmTitle = document.getElementById('confirm-title');
+const confirmSub = document.getElementById('confirm-sub');
+const confirmBody = document.getElementById('confirm-body');
+const confirmCancelBtn = document.getElementById('confirm-cancel');
+const confirmOkBtn = document.getElementById('confirm-ok');
+
+function showConfirmModal({ title, sub, rows, okColor }){
+  return new Promise((resolve)=>{
+    confirmTitle.textContent = title;
+    confirmSub.textContent = sub;
+    confirmBody.innerHTML = rows.map(r =>
+      `<div class="confirm-row"><span>${escapeHtml(r.label)}</span><b>${escapeHtml(r.value || '—')}</b></div>`
+    ).join('');
+    confirmOkBtn.style.background = okColor;
+    confirmModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    function cleanup(result){
+      confirmModal.hidden = true;
+      document.body.style.overflow = '';
+      confirmOkBtn.removeEventListener('click', onOk);
+      confirmCancelBtn.removeEventListener('click', onCancel);
+      confirmModal.removeEventListener('click', onOverlay);
+      resolve(result);
+    }
+    function onOk(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    function onOverlay(e){ if(e.target === confirmModal) cleanup(false); }
+
+    confirmOkBtn.addEventListener('click', onOk);
+    confirmCancelBtn.addEventListener('click', onCancel);
+    confirmModal.addEventListener('click', onOverlay);
+  });
+}
+
 // ---------------- koneksi ke Google Sheets (Apps Script Web App) ----------------
 // URL ini sudah tertanam permanen di form — QC tidak perlu mengisi apa pun.
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfOB7w1bUw_CSt0L6FfNt1fg93L2hloWqB1KLfmUo_QC6Yj8Aegu7iKtM9GG7_RtOa/exec';
 
-// Kirim satu baris ke Google Sheets lewat Apps Script Web App.
-// Karena respons Apps Script tidak selalu bisa dibaca browser (CORS),
-// keberhasilan hanya berarti "request berhasil dikirim", bukan konfirmasi tertulis.
-async function pushRowToSheet(sheetName, rowArray){
+const gsheetForm = document.getElementById('gsheet-form');
+const gsheetPayload = document.getElementById('gsheet-payload');
+gsheetForm.action = SCRIPT_URL;
+
+// Kirim satu baris ke Google Sheets lewat submit form HTML tersembunyi (bukan fetch).
+// fetch(..., {mode:'no-cors'}) ke Apps Script punya bug dikenal: saat Apps Script
+// meneruskan (redirect) request ke server eksekusinya, body POST sering hilang,
+// sehingga doPost() tidak pernah menerima data walau fetch "terlihat" sukses.
+// Submit form asli tidak kena batasan itu karena redirect ditangani langsung oleh
+// browser sebagai navigasi biasa (ini cara resmi yang direkomendasikan Google).
+function pushRowToSheet(sheetName, rowArray){
   try{
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({ sheet: sheetName, row: rowArray })
-    });
+    gsheetPayload.value = JSON.stringify({ sheet: sheetName, row: rowArray });
+    gsheetForm.submit();
     return { ok: true };
   }catch(err){
     return { ok: false, reason: err.message };
@@ -842,6 +1030,25 @@ document.getElementById('form-temuan').addEventListener('submit', async (e)=>{
     operator: document.getElementById('t-operator').value,
     ttd: document.getElementById('t-ttd').value
   };
+
+  const confirmed = await showConfirmModal({
+    title: 'Kirim Temuan?',
+    sub: `${entry.tanggal} · Shift ${entry.shift} · ${entry.timestamp}`,
+    okColor: 'var(--rust)',
+    rows: [
+      { label: 'Divisi', value: entry.divisi },
+      { label: 'Mesin', value: entry.mesin },
+      { label: 'Produk', value: entry.produk },
+      { label: 'Temuan', value: entry.temuan },
+      { label: 'Tipe', value: entry.tipe },
+      { label: 'Keterangan', value: entry.keterangan },
+      { label: 'Solusi', value: entry.solusi },
+      { label: 'Operator Mesin', value: entry.operator },
+      { label: 'TTD QC', value: entry.ttd }
+    ]
+  });
+  if(!confirmed) return;
+
   queueTemuan.push(entry);
   await saveQueue('temuan');
   renderLog('temuan');
@@ -879,6 +1086,27 @@ document.getElementById('form-spec').addEventListener('submit', async (e)=>{
     tinggiperslop: document.getElementById('s-tinggiperslop').value,
     volume: document.getElementById('s-volume').value
   };
+
+  const confirmed = await showConfirmModal({
+    title: 'Kirim Data Spec?',
+    sub: `${entry.tanggal} · Shift ${entry.shift}`,
+    okColor: 'var(--green)',
+    rows: [
+      { label: 'Item', value: entry.item },
+      { label: 'Mesin', value: entry.mesin },
+      { label: 'Standart (gr)', value: entry.standart },
+      { label: 'Berat (gr)', value: entry.berat },
+      { label: 'Dia Bibir (mm)', value: entry.diabibir },
+      { label: 'Dia Neck (mm)', value: entry.dianeck },
+      { label: 'Tebal Body (mm)', value: entry.tebalbody },
+      { label: 'Tebal Bawah (mm)', value: entry.tebalbawah },
+      { label: 'Tinggi Cup (mm)', value: entry.tinggicup },
+      { label: 'Tinggi Perslop (mm)', value: entry.tinggiperslop },
+      { label: 'Volume', value: entry.volume }
+    ]
+  });
+  if(!confirmed) return;
+
   queueSpec.push(entry);
   await saveQueue('spec');
   renderLog('spec');
