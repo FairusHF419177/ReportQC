@@ -456,14 +456,6 @@
 </div>
 
 
-<!-- Form tersembunyi: mengirim data ke Apps Script lewat submit form asli
-     (bukan fetch) supaya tidak kena masalah CORS/redirect yang menghilangkan
-     data POST. Hasil kiriman ditampung di iframe tersembunyi. -->
-<iframe name="gsheet-target" id="gsheet-target" style="display:none" title="kirim ke sheet"></iframe>
-<form id="gsheet-form" method="POST" target="gsheet-target" style="display:none">
-  <input type="hidden" name="payload" id="gsheet-payload">
-</form>
-
 <div class="wrap">
   <div class="tag">
     <div class="tag-eyebrow">QC V2 · Form Input Lapangan</div>
@@ -804,20 +796,21 @@ function showConfirmModal({ title, sub, rows, okColor }){
 // URL ini sudah tertanam permanen di form — QC tidak perlu mengisi apa pun.
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfOB7w1bUw_CSt0L6FfNt1fg93L2hloWqB1KLfmUo_QC6Yj8Aegu7iKtM9GG7_RtOa/exec';
 
-const gsheetForm = document.getElementById('gsheet-form');
-const gsheetPayload = document.getElementById('gsheet-payload');
-gsheetForm.action = SCRIPT_URL;
-
-// Kirim satu baris ke Google Sheets lewat submit form HTML tersembunyi (bukan fetch).
-// fetch(..., {mode:'no-cors'}) ke Apps Script punya bug dikenal: saat Apps Script
-// meneruskan (redirect) request ke server eksekusinya, body POST sering hilang,
-// sehingga doPost() tidak pernah menerima data walau fetch "terlihat" sukses.
-// Submit form asli tidak kena batasan itu karena redirect ditangani langsung oleh
-// browser sebagai navigasi biasa (ini cara resmi yang direkomendasikan Google).
-function pushRowToSheet(sheetName, rowArray){
+// Kirim satu baris ke Google Sheets lewat fetch().
+// Pakai mode 'no-cors' + body berupa string biasa (bukan JSON header) supaya
+// browser mengirimnya sebagai "simple request" dan tidak kena preflight yang
+// tidak didukung Apps Script. fetch() dipilih (bukan submit <form> ke iframe)
+// karena beberapa browser (terutama Safari) diam-diam memblokir navigasi form
+// ke iframe kalau dipicu dari luar konteks klik langsung (mis. setelah pop-up
+// konfirmasi async) — fetch() tidak punya batasan itu.
+async function pushRowToSheet(sheetName, rowArray){
   try{
-    gsheetPayload.value = JSON.stringify({ sheet: sheetName, row: rowArray });
-    gsheetForm.submit();
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      redirect: 'follow',
+      body: JSON.stringify({ sheet: sheetName, row: rowArray })
+    });
     return { ok: true };
   }catch(err){
     return { ok: false, reason: err.message };
