@@ -140,6 +140,44 @@
     margin: 18px 0 12px;
   }
   .section-label:first-child{ margin-top: 0; }
+  .section-label{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mode-toggle{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: none;
+    padding-bottom: 0;
+    white-space: nowrap;
+  }
+  .mode-toggle input[type=checkbox]{
+    appearance: none;
+    -webkit-appearance: none;
+    width: 30px;
+    height: 17px;
+    border-radius: 10px;
+    background: var(--line);
+    border: 1px solid #B7AF97;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .mode-toggle input[type=checkbox]::after{
+    content: "";
+    position: absolute;
+    top: 1px; left: 1px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.15s ease;
+  }
+  .mode-toggle input[type=checkbox]:checked{ background: var(--amber); border-color: var(--amber-deep); }
+  .mode-toggle input[type=checkbox]:checked::after{ left: 14px; }
 
   .grid{
     display: grid;
@@ -471,19 +509,32 @@
   <!-- ===================== FORM TEMUAN ===================== -->
   <div class="panel" id="panel-temuan">
     <form id="form-temuan">
-      <div class="section-label">Waktu &amp; Lini <span style="opacity:.6">(otomatis, GMT+7)</span></div>
+      <div class="section-label">
+        Waktu &amp; Lini
+        <label class="mode-toggle">
+          <input type="checkbox" id="t-manual-toggle">
+          <span>Isi manual</span>
+        </label>
+      </div>
       <div class="grid">
         <div class="field">
           <label>Tanggal</label>
           <div class="readonly-chip" id="t-tanggal-display">—</div>
+          <input type="date" id="t-tanggal-manual" class="manual-field" hidden>
         </div>
         <div class="field">
           <label>Shift</label>
           <div class="readonly-chip" id="t-shift-display">—</div>
+          <select id="t-shift-manual" class="manual-field" hidden>
+            <option value="1">Shift 1 (06:00–14:00)</option>
+            <option value="2">Shift 2 (14:00–22:00)</option>
+            <option value="3">Shift 3 (22:00–06:00)</option>
+          </select>
         </div>
         <div class="field full">
           <label>Timestamp</label>
           <div class="readonly-chip" id="t-timestamp-display">—</div>
+          <input type="time" id="t-timestamp-manual" class="manual-field" step="1" hidden>
         </div>
       </div>
 
@@ -544,7 +595,7 @@
         </div>
       </div>
 
-      <div class="hint">Tanggal, shift, dan timestamp mengikuti jam saat ini (GMT+7) dan diambil otomatis saat form disimpan.</div>
+      <div class="hint">Tanggal, shift, dan timestamp otomatis mengikuti jam saat ini (GMT+7). Aktifkan "Isi manual" kalau perlu mengubahnya sendiri (mis. input data susulan).</div>
       <div class="btn-row">
         <button type="submit" class="submit">Simpan Temuan</button>
       </div>
@@ -562,7 +613,13 @@
   <!-- ===================== FORM DATA SPEC ===================== -->
   <div class="panel" id="panel-spec" hidden>
     <form id="form-spec">
-      <div class="section-label">Item &amp; Waktu</div>
+      <div class="section-label">
+        Item &amp; Waktu
+        <label class="mode-toggle">
+          <input type="checkbox" id="s-manual-toggle">
+          <span>Isi manual</span>
+        </label>
+      </div>
       <div class="grid">
         <div class="field full">
           <label for="s-item">Item</label>
@@ -571,12 +628,18 @@
           </select>
         </div>
         <div class="field">
-          <label>Tanggal <span style="opacity:.6">(otomatis)</span></label>
+          <label>Tanggal</label>
           <div class="readonly-chip" id="s-tanggal-display">—</div>
+          <input type="date" id="s-tanggal-manual" class="manual-field" hidden>
         </div>
         <div class="field">
-          <label>Shift <span style="opacity:.6">(otomatis)</span></label>
+          <label>Shift</label>
           <div class="readonly-chip" id="s-shift-display">—</div>
+          <select id="s-shift-manual" class="manual-field" hidden>
+            <option value="1">Shift 1 (06:00–14:00)</option>
+            <option value="2">Shift 2 (14:00–22:00)</option>
+            <option value="3">Shift 3 (22:00–06:00)</option>
+          </select>
         </div>
         <div class="field full">
           <label for="s-mesin">Mesin</label>
@@ -674,30 +737,30 @@ function mesinCategory(mesin){
 
 const troubleData = {
   THERMO: {
-    'Collapse': ['Cup kolab bawah bibir..','Lainya...'],
-    'Unmoulded': ['Cup kolab bottom (unmoulded)..','Cup kolab body (unmoulded)..','Body bundar tidak siku sesuai mould','Cup bottom pendek..','Lainya...'],
-    'Button Gembos': ['Cup bottom gembos..','Lainya...'],
-    'Scratch': ['Cup scratch (bergaris) body..','Cup scratch (V) body..','Lainya...'],
-    'Appereance': ['Cup body merintis..','Cup body buram..','Cup overheat..','Lainya...'],
-    'Under gramasi': ['Cup under gramasi..','Lainya...'],
-    'Over gramasi': ['Cup over gramasi..','Lainya...'],
-    'Material Cup': ['Material mould','Material stretch','Bibir cup gelombang','Lainya...'],
-    'Cup kotor': ['Noda oli','Lainya...'],
-    'Black spot': ['Black spot','Lainya...'],
-    'White spot': ['White spot','Lainya...'],
-    'Serabut': ['Serabut panjang','Lainya...'],
-    'Quantity tidak sesuai': ['Cup perslop tidak sesuai','Slop perbox tidak sesuai','Lainya...'],
-    'Lainya...': ['Lainya...']
+    'Collapse': ['Cup kolab bawah bibir..','Lainnya...'],
+    'Unmoulded': ['Cup kolab bottom (unmoulded)..','Cup kolab body (unmoulded)..','Body bundar tidak siku sesuai mould','Cup bottom pendek..','Lainnya...'],
+    'Button Gembos': ['Cup bottom gembos..','Lainnya...'],
+    'Scratch': ['Cup scratch (bergaris) body..','Cup scratch (V) body..','Lainnya...'],
+    'Appereance': ['Cup body merintis..','Cup body buram..','Cup overheat..','Lainnya...'],
+    'Under gramasi': ['Cup under gramasi..','Lainnya...'],
+    'Over gramasi': ['Cup over gramasi..','Lainnya...'],
+    'Material Cup': ['Material mould','Material stretch','Bibir cup gelombang','Lainnya...'],
+    'Cup kotor': ['Noda oli','Lainnya...'],
+    'Black spot': ['Black spot','Lainnya...'],
+    'White spot': ['White spot','Lainnya...'],
+    'Serabut': ['Serabut panjang','Lainnya...'],
+    'Quantity tidak sesuai': ['Cup perslop tidak sesuai','Slop perbox tidak sesuai','Lainnya...'],
+    'Lainnya...': ['Lainnya...']
   },
   EXTR: {
-    'Kondisi Sheet': ['Visual not OK','Tebal sheet tidak sesuai','Lainya...'],
-    'Lainya...': ['Lainya...']
+    'Kondisi Sheet': ['Visual not OK','Tebal sheet tidak sesuai'],
+    'Lainnya...': ['Lainnya...']
   },
   PRINTING: {
-    'Visual': ['Smear print','Overlap','Discolour','Uncompleted','Ink stain','Lainya...'],
-    'Cup': ['Blackspot','Cup rapet','Body melipat','Statik','Lainya...'],
-    'Packing': ['Jumlah cup perslop','Jumlah slop perbox','Penulisan kode box','Lainya...'],
-    'Lainya...': ['Lainya...']
+    'Visual': ['Smear print','Overlap','Discolour','Uncompleted','Ink stain','Lainnya...'],
+    'Cup': ['Blackspot','Cup rapet','Body melipat','Statik','Lainnya...'],
+    'Packing': ['Jumlah cup perslop','Jumlah slop perbox','Penulisan kode box','Lainnya...'],
+    'Lainnya...': ['Lainnya...']
   }
 };
 
@@ -846,6 +909,73 @@ const tShiftDisplay = document.getElementById('t-shift-display');
 const tTimestampDisplay = document.getElementById('t-timestamp-display');
 const sTanggalDisplay = document.getElementById('s-tanggal-display');
 const sShiftDisplay = document.getElementById('s-shift-display');
+
+// ---------------- toggle otomatis / manual (Tanggal, Shift, Timestamp) ----------------
+const tManualToggle = document.getElementById('t-manual-toggle');
+const tTanggalManual = document.getElementById('t-tanggal-manual');
+const tShiftManual = document.getElementById('t-shift-manual');
+const tTimestampManual = document.getElementById('t-timestamp-manual');
+const sManualToggle = document.getElementById('s-manual-toggle');
+const sTanggalManual = document.getElementById('s-tanggal-manual');
+const sShiftManual = document.getElementById('s-shift-manual');
+
+function toISODate(dmy){
+  // dmy: "dd-mm-yyyy" -> "yyyy-mm-dd" (format yang dipakai <input type=date>)
+  const [d,m,y] = dmy.split('-');
+  return `${y}-${m}-${d}`;
+}
+function fromISODate(iso){
+  // "yyyy-mm-dd" -> "dd-mm-yyyy"
+  const [y,m,d] = iso.split('-');
+  return `${d}-${m}-${y}`;
+}
+
+function setupManualToggle(toggleEl, chipEls, manualEls, prefill){
+  toggleEl.addEventListener('change', ()=>{
+    const manual = toggleEl.checked;
+    chipEls.forEach(el => el.hidden = manual);
+    manualEls.forEach(el => el.hidden = !manual);
+    if(manual) prefill();
+  });
+}
+
+setupManualToggle(
+  tManualToggle,
+  [tTanggalDisplay, tShiftDisplay, tTimestampDisplay],
+  [tTanggalManual, tShiftManual, tTimestampManual],
+  ()=>{
+    tTanggalManual.value = toISODate(currentDateDMY());
+    tShiftManual.value = currentShift();
+    tTimestampManual.value = currentTimestampHMS();
+  }
+);
+
+setupManualToggle(
+  sManualToggle,
+  [sTanggalDisplay, sShiftDisplay],
+  [sTanggalManual, sShiftManual],
+  ()=>{
+    sTanggalManual.value = toISODate(currentDateDMY());
+    sShiftManual.value = currentShift();
+  }
+);
+
+// Mengambil nilai Tanggal/Shift/Timestamp yang benar-benar dipakai saat submit:
+// dari input manual kalau toggle "Isi manual" aktif, atau dari jam berjalan (GMT+7) kalau tidak.
+function getEffectiveTanggal(kind){
+  if(kind === 'temuan' && tManualToggle.checked) return tTanggalManual.value ? fromISODate(tTanggalManual.value) : currentDateDMY();
+  if(kind === 'spec' && sManualToggle.checked) return sTanggalManual.value ? fromISODate(sTanggalManual.value) : currentDateDMY();
+  return currentDateDMY();
+}
+function getEffectiveShift(kind){
+  if(kind === 'temuan' && tManualToggle.checked) return tShiftManual.value || currentShift();
+  if(kind === 'spec' && sManualToggle.checked) return sShiftManual.value || currentShift();
+  return currentShift();
+}
+function getEffectiveTimestamp(){
+  if(tManualToggle.checked) return tTimestampManual.value || currentTimestampHMS();
+  return currentTimestampHMS();
+}
 
 const SHIFT_RANGE = { '1': '06:00–14:00', '2': '14:00–22:00', '3': '22:00–06:00' };
 
@@ -1013,9 +1143,9 @@ document.getElementById('copy-spec').addEventListener('click', async ()=>{
 document.getElementById('form-temuan').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const entry = {
-    tanggal: currentDateDMY(),
-    shift: currentShift(),
-    timestamp: currentTimestampHMS(),
+    tanggal: getEffectiveTanggal('temuan'),
+    shift: getEffectiveShift('temuan'),
+    timestamp: getEffectiveTimestamp(),
     divisi: tDivisi.value,
     mesin: tMesin.value,
     produk: tProduk.value,
@@ -1069,8 +1199,8 @@ document.getElementById('form-spec').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const entry = {
     item: sItem.value,
-    tanggal: currentDateDMY(),
-    shift: currentShift(),
+    tanggal: getEffectiveTanggal('spec'),
+    shift: getEffectiveShift('spec'),
     mesin: sMesin.value,
     standart: sStandart.value,
     berat: document.getElementById('s-berat').value,
