@@ -683,9 +683,21 @@
           <label for="s-tinggiperslop">Tinggi Perslop (mm)</label>
           <input type="number" step="0.01" id="s-tinggiperslop" placeholder="0.0">
         </div>
-        <div class="field lcd full">
+        <div class="field lcd">
           <label for="s-volume">Volume</label>
           <input type="number" step="0.01" id="s-volume" placeholder="0.0">
+        </div>
+        <div class="field lcd">
+          <label for="s-isiperslop">Isi Perslop (pcs)</label>
+          <input type="number" step="1" inputmode="numeric" id="s-isiperslop" placeholder="0">
+        </div>
+      </div>
+
+      <div class="section-label">Penanggung Jawab</div>
+      <div class="grid">
+        <div class="field full">
+          <label for="s-pic">PIC</label>
+          <input type="text" id="s-pic" required placeholder="nama PIC / QC yang mengukur">
         </div>
       </div>
 
@@ -716,17 +728,17 @@ const divisiMesin = {
 
 const mesinProduk = {
   TF04: ['8oz','10oz','12oz','14oz'],
-  TF06: ['120ml','180ml','220ml','150ps','200ps','14oz'],
+  TF06: ['120ml','180ml','220ml','150ps','200ps'],
   TF07: ['8oz','10oz','12oz','14oz'],
   TF08: ['14oz','16hallo','16slim','18hallo slim','18slim','22hallo slim','22slim'],
   EXTR4P: ['SheetPS','SheetNatural'],
   EXTR5P: ['SheetNatural'],
-  TF11P: ['AAL','UAL','6oz','8oz','10oz','12oz','14oz','10hallo'],
+  TF11P: ['AAL','UAL','6oz','8oz','10oz','12oz','14oz'],
   TF11L: ['120ml','220ml','200ps'],
   P1: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE'],
   P2: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE'],
-  P3: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS','22s Tea & You','16oz Nesya'],
-  P4: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS','22s Tea & You','16oz Nesya']
+  P3: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS'],
+  P4: ['200 BOLA','150 BOLA','200 LETS TAKE COFFEE','16 ICE TEA','22s ICE TEA','22s TEH RAS','22s RAS RMD','16 IJUICE','22s IJUICE','16 COFFEE','16 TEH OCA','22s TEH OCA','22B TEH OCA','26B TEH OCA','150 SUSU SAPI','150 SUSU KAMBING','22s HOTWAYS','22s ASIA CROFFLE','12 WALDO','22s HBD','14U KRISTAL','22s JERUK PERAS']
 };
 
 function mesinCategory(mesin){
@@ -737,32 +749,27 @@ function mesinCategory(mesin){
 
 const troubleData = {
   THERMO: {
-    'Collapse': ['Cup kolab bawah bibir..','Lainnya...'],
-    'Unmoulded': ['Cup kolab bottom (unmoulded)..','Cup kolab body (unmoulded)..','Body bundar tidak siku sesuai mould','Cup bottom pendek..','Lainnya...'],
-    'Bottom tidak sesuai': ['Bottom gembos..','Bottom pendek...'],
-    'Scratch': ['Cup scratch (bergaris) body..','Cup scratch (V) body..','Lainnya...'],
-    'Appereance': ['Cup body merintis..','Cup body buram..','Cup overheat..','Lainnya...'],
-    'Under gramasi': ['Cup under gramasi..','Lainnya...'],
-    'Over gramasi': ['Cup over gramasi..','Lainnya...'],
-    'Material Cup': ['Material mould','Material stretch','Bibir cup gelombang','Lainnya...'],
-    'Cup kotor': ['Noda oli','Lainnya...'],
-    'Black spot': ['Black spot','Lainnya...'],
-    'White spot': ['White spot','Lainnya...'],
-    'Serabut': ['Serabut panjang','Lainnya...'],
-    'Quantity tidak sesuai': ['Cup perslop tidak sesuai','Slop perbox tidak sesuai','Lainnya...'],
-    'Supplay material tidak rata': ['Supplay material tidak rata...'],
-    'Curling not OK': ['Keriting...','Tidak sempurna'],
-    'Lainnya...': ['Lainnya...']
+    'Collapse': ['Cup kolab bawah bibir..'],
+    'Unmoulded': ['Cup kolab bottom (unmoulded)..','Cup kolab body (unmoulded)..','Body bundar tidak siku sesuai mould','Cup bottom pendek..'],
+    'Button Gembos': ['Cup bottom gembos..'],
+    'Scratch': ['Cup scratch (bergaris) body..','Cup scratch (V) body..'],
+    'Appereance': ['Cup body merintis..','Cup body buram..','Cup overheat..'],
+    'Under gramasi': ['Cup under gramasi..'],
+    'Over gramasi': ['Cup over gramasi..'],
+    'Material Cup': ['Material mould','Material stretch','Bibir cup gelombang'],
+    'Cup kotor': ['Noda oli'],
+    'Black spot': ['Black spot'],
+    'White spot': ['White spot'],
+    'Serabut': ['Serabut panjang'],
+    'Quantity tidak sesuai': ['Cup perslop tidak sesuai','Slop perbox tidak sesuai']
   },
   EXTR: {
-    'Kondisi Sheet': ['Visual not OK','Tebal sheet tidak sesuai'],
-    'Lainnya...': ['Lainnya...']
+    'Kondisi Sheet': ['Visual not OK','Tebal sheet tidak sesuai']
   },
   PRINTING: {
-    'Visual': ['Smear print','Overlap','Discolour','Uncompleted','Ink stain','Lainnya...'],
-    'Cup': ['Blackspot','Cup rapet','Body melipat','Statik','Lainnya...'],
-    'Packing': ['Jumlah cup perslop','Jumlah slop perbox','Penulisan kode box','Lainnya...'],
-    'Lainnya...': ['Lainnya...']
+    'Visual': ['Smear print','Overlap','Discolour','Uncompleted','Ink stain'],
+    'Cup': ['Blackspot','Cup rapet','Body melipat','Statik'],
+    'Packing': ['Jumlah cup perslop','Jumlah slop perbox','Penulisan kode box']
   }
 };
 
@@ -1069,8 +1076,8 @@ async function saveQueue(kind){
 
 const TEMUAN_COLS = ['tanggal','shift','timestamp','divisi','mesin','produk','temuan','tipe','keterangan','solusi','operator','ttd'];
 const TEMUAN_LABELS = ['Tanggal','Shift','Timestamp','Divisi','Mesin','Produk','Temuan','Tipe','Keterangan','Solusi','Operator Mesin','TTD QC'];
-const SPEC_COLS = ['item','tanggal','shift','mesin','standart','berat','diabibir','dianeck','tebalbody','tebalbawah','tinggicup','tinggiperslop','volume'];
-const SPEC_LABELS = ['Item','Tanggal','Shift','Mesin','Standart(gr)','Berat(gr)','Dia Bibir(mm)','Dia Neck(mm)','Tebal Body(mm)','Tebal Bawah(mm)','Tinggi Cup(mm)','Tinggi Perslop(mm)','Volume'];
+const SPEC_COLS = ['item','tanggal','shift','mesin','standart','berat','diabibir','dianeck','tebalbody','tebalbawah','tinggicup','tinggiperslop','volume','isiperslop','pic'];
+const SPEC_LABELS = ['Item','Tanggal','Shift','Mesin','Standart(gr)','Berat(gr)','Dia Bibir(mm)','Dia Neck(mm)','Tebal Body(mm)','Tebal Bawah(mm)','Tinggi Cup(mm)','Tinggi Perslop(mm)','Volume','Isi Perslop','PIC'];
 // Nama tab harus sama persis dengan nama sheet di Google Sheets (dipakai oleh Apps Script).
 const SHEET_NAME_TEMUAN = 'INPUT TEMUAN';
 const SHEET_NAME_SPEC = 'INPUT DATA SPEC';
@@ -1212,7 +1219,9 @@ document.getElementById('form-spec').addEventListener('submit', async (e)=>{
     tebalbawah: document.getElementById('s-tebalbawah').value,
     tinggicup: document.getElementById('s-tinggicup').value,
     tinggiperslop: document.getElementById('s-tinggiperslop').value,
-    volume: document.getElementById('s-volume').value
+    volume: document.getElementById('s-volume').value,
+    isiperslop: document.getElementById('s-isiperslop').value,
+    pic: document.getElementById('s-pic').value
   };
 
   const confirmed = await showConfirmModal({
@@ -1230,7 +1239,9 @@ document.getElementById('form-spec').addEventListener('submit', async (e)=>{
       { label: 'Tebal Bawah (mm)', value: entry.tebalbawah },
       { label: 'Tinggi Cup (mm)', value: entry.tinggicup },
       { label: 'Tinggi Perslop (mm)', value: entry.tinggiperslop },
-      { label: 'Volume', value: entry.volume }
+      { label: 'Volume', value: entry.volume },
+      { label: 'Isi Perslop (pcs)', value: entry.isiperslop },
+      { label: 'PIC', value: entry.pic }
     ]
   });
   if(!confirmed) return;
